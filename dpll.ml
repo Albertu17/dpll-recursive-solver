@@ -100,16 +100,26 @@ let pur clauses =
       le littéral de cette clause unitaire ;
     - sinon, lève une exception `Not_found' *)
 let rec unitaire clauses = match clauses with
-  | [] -> raise Exception "Not_found"
+  | [] -> raise Exception "Not_found" (* TODO: Trouver bon format erreur *)
   | h::t -> match h with
     | [a] -> a
     | _ -> unitaire t
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 let rec solveur_dpll_rec clauses interpretation =
-  (* à compléter *)
-  None
-
+  if clauses = [] then Some interpretation else
+  if mem [] clauses then None else
+  try 
+    let unitLitt = unitaire clauses in
+    solveur_dpll_rec (simplifie unitLitt clauses) interpretation
+  with "Not_found" ->
+  try 
+    let pureLitt = pur clauses in
+    solveur_dpll_rec (simplifie pureLitt clauses) interpretation
+  with Failure "pas de littéral pur" -> (* TODO: Trouver bon format erreur *)
+  let p = hd (hd clauses) in (* TODO: Comment optimiser le choix de p ? *)
+  solveur_dpll_rec (simplifie p clauses) interpretation ||
+  solveur_dpll_rec (simplifie (-p) clauses) interpretation
 
 (* tests *)
 (* ----------------------------------------------------------- *)
