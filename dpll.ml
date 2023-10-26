@@ -51,8 +51,14 @@ let coloriage = [
    applique la simplification de l'ensemble des clauses en mettant
    le littéral l à vrai *)
 let simplifie l clauses =
-  (* à compléter *)
-  []
+  let aux clause = 
+    let rec auxDeAux clause acc = match clause with
+      | [] -> Some(acc)
+      | h::t -> if h=l then None
+        else if h=(-l) then auxDeAux t acc
+        else auxDeAux t (h::acc)
+    in auxDeAux clause []
+  in filter_map aux clauses
 
 (* solveur_split : int list list -> int list -> int list option
    exemple d'utilisation de `simplifie' *)
@@ -71,7 +77,11 @@ let rec solveur_split clauses interpretation =
   | _    -> branche
 
 (* tests *)
-(* let () = print_modele (solveur_split systeme []) *)
+let () = print_modele (solveur_split systeme [])
+let () = print_modele (solveur_split exemple_3_12 [])
+let () = print_modele (solveur_split exemple_7_2 [])
+let () = print_modele (solveur_split exemple_7_4 [])
+let () = print_modele (solveur_split exemple_7_8 [])
 (* let () = print_modele (solveur_split coloriage []) *)
 
 (* solveur dpll récursif *)
@@ -89,9 +99,11 @@ let pur clauses =
     - si `clauses' contient au moins une clause unitaire, retourne
       le littéral de cette clause unitaire ;
     - sinon, lève une exception `Not_found' *)
-let unitaire clauses =
-  (* à compléter *)
-  0
+let rec unitaire clauses = match clauses with
+  | [] -> raise Exception "Not_found"
+  | h::t -> match h with
+    | [a] -> a
+    | _ -> unitaire t
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 let rec solveur_dpll_rec clauses interpretation =
@@ -104,6 +116,6 @@ let rec solveur_dpll_rec clauses interpretation =
 (* let () = print_modele (solveur_dpll_rec systeme []) *)
 (* let () = print_modele (solveur_dpll_rec coloriage []) *)
 
-let () =
+(* let () =
   let clauses = Dimacs.parse Sys.argv.(1) in
-  print_modele (solveur_dpll_rec clauses [])
+  print_modele (solveur_dpll_rec clauses []) *)
