@@ -64,7 +64,26 @@ par filter_map.
    quelques phrases en français comment ces fonctions auxiliaires sont
    utilisées dans votre implémentation de la fonction `pur`.
 
-**à remplir**
+Fonction auxillaire ajouté : searchPur
+
+La fonction searchPur prends en paramtères : 
+	- une liste préallablement aplatie, pour simplifier les parcours
+	- un int pour indiquer l'index du littéral que l'on cherche à déterminer si il est pur ou non. A chaque appel récursif, ce litéral est incrémenté de 1.
+	- un int pour indiquer la length de la liste passé en paramètre. Ceci évite de devoir re-calculer la longueur à chaque itération de cette fonction.
+
+Cette fonction auxiliaire compare le littéral correspondant à l'index passé en 2eme paramètre à tous les autres nombres de la liste. 
+
+- Si son inverse n'existe pas dans la liste, alors le littéral est pur, et est renvoyé par la fonction, qui s'arrête donc ici (on évite donc de parcourir toute la liste si l'on à déjà un littéral pur sous la main).
+
+- Si son inverse existe dans la liste, ce littéral n'est donc pas pur, et la fonction s'appelle elle même en incrémentant l'index appellé de 1. Si l'index + 1 est supérieur à la longueur de la lsite (donc si List.nth index l retournerait Failure nth), alors l'on considère qu'il n'y a aucun littéral pur dans la liste, et elle lève donc une exception (Failure "pas de littéral pur").
+
+
+La fonction pur, elle, prends en paramètre une liste de liste, la flatten à l'aide de List.flatten, et appelle searchPur sur le littéral d'index 0 dans cette liste. Elle lève (Failure "pas de littéral pur") si il n'existe pas de litéral pur dans cette liste. 
+
+Fonctions auxillaires utilisés : 
+
+List.find_opt
+List.length 
 
 ---
 

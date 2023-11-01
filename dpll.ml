@@ -90,7 +90,7 @@ let () = print_modele (solveur_split exemple_3_12 [])
 let () = print_modele (solveur_split exemple_7_2 [])
 let () = print_modele (solveur_split exemple_7_4 [])
 let () = print_modele (solveur_split exemple_7_8 [])
-(* let () = print_modele (solveur_split coloriage []) *)
+(let () = print_modele (solveur_split coloriage []) 
 
 (* solveur dpll récursif *)
 (* ----------------------------------------------------------- *)
@@ -99,9 +99,31 @@ let () = print_modele (solveur_split exemple_7_8 [])
     - si `clauses' contient au moins un littéral pur, retourne
       ce littéral ;
     - sinon, lève une exception `Failure "pas de littéral pur"' *)
-let pur clauses =
-  (* à compléter *)
-  0
+
+
+(* custom exception to be used to raise (Failure "pas de littéral pur") *)
+exception Failure of string;;
+
+
+(* pur : int list list -> int
+    - si `clauses' contient au moins littéral, retourne ce littéral
+    - sinon, lève une exception `Failure "pas de littéral pur"
+*)
+let pur clauses = let l = List.flatten clauses in 
+  let sch = searchPur l 0 (List.length l) in 
+  if sch = 0 then raise (Failure "pas de littéral pur") else sch
+
+
+(* searchPur : int list -> int -> int -> int
+    - si 'flat' ne contient pas l'inverse du littéral d'index n, s'appelle recursivement en incrémentant l'index de 1
+    - si n + 1 est supérieuse à la longeur length de la liste aplatie, alors il n'existe pas de litéral pur, et 
+        la fonction lève une exception Failure "pas de littéral pur"
+    - si 'flat' en contient pas l'inverse du littéral d'index n, alors ce littéral est pur, et est retourné.
+ *)
+let rec searchPur flat n length = match List.find_opt ((fun item -> item = - (List.nth flat n))) flat with
+  | None -> List.nth flat n
+  | l -> if (n + 1) >= length then raise (Failure "pas de littéral pur") else searchPur flat (n + 1) length
+
 
 (* unitaire : int list list -> int
     - si `clauses' contient au moins une clause unitaire, retourne
