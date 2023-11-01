@@ -19,7 +19,9 @@ Questions sur votre code
    et que ensuite `./dpll sudoku-4x4.cnf` donne la réponse attendue (voir
    fichier README) ?
 
-**à remplir**
+Oui, nous avons testé ces commandes. 'make dpll' s'exécute sans erreurs ou
+warnings et le résultat './dpll sudoku-4x4.cnf' correspond précisément à
+celui attendu.
 
 ---
 
@@ -42,7 +44,7 @@ de la manière suivante:
    . sinon, elle renvoie Some(cl).
 La fonction 'simplifie' correspond ensuite dans notre implémentation au
 résultat de l'application de 'simplifieClause' sur l'ensemble des clauses
-par filter_map.
+par 'filter_map'.
 
 ---
 
@@ -55,7 +57,12 @@ par filter_map.
    comment ces fonctions auxiliaires sont utilisées dans votre
    implémentation de la fonction `unitaire`.
 
-**à remplir**
+Nous n'avons pas utilisé de fonction auxiliaire dans notre implémentation
+de la fonction 'unitaire'. Celle-ci parcourt la liste de clauses qui lui 
+est passée en argument, et vérifie pour chaque élément si il correspond à
+une clause unitaire par pattern matching. Si c'est le cas, le littéral 
+constituant cette clause est renvoyé. Si toute la liste a été parcourue,
+l'exception Not_found est levée.
 
 ---
 
@@ -91,7 +98,20 @@ List.length
    `solveur_split` et `solveur_dpll_rec` ont un comportement
    différent, et expliquez les différences entre ces deux fonctions.
 
-**à remplir**
+La formule correspondant à l'exemple 7_2 ({(1,-1,-3);(-2,3);(-2)}) est
+évaluée comme satisfiable par les deux solveurs, mais ces derniers ne
+donnent pas la même interprétation comme premier exemple de
+satisfiabilité:
+   . solveur_split donne comme exemple les valeurs 1, -2 et une valeur
+   indifférente pour 3.
+   . solveur_dpll_rec donne comme exemple les valeurs -2, -3 et une
+   valeur indifférente pour 1.
+Cette différence s'explique par le fait que solveur_split commence
+par split avec 1, tandis que solveur_dpll_rec commence par appliquer
+la règle unit, ce qui entraîne une simplification par -2.
+De manière générale, la principale différence entre les deux solveurs
+est l'application supplémentaire des règles unit et pure avant celle
+de la règle split dans le solveur dpll.
 
 ---
 

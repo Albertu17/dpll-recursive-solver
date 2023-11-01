@@ -90,29 +90,10 @@ let () = print_modele (solveur_split exemple_3_12 [])
 let () = print_modele (solveur_split exemple_7_2 [])
 let () = print_modele (solveur_split exemple_7_4 [])
 let () = print_modele (solveur_split exemple_7_8 [])
-(let () = print_modele (solveur_split coloriage []) 
+let () = print_modele (solveur_split coloriage []) 
 
 (* solveur dpll récursif *)
 (* ----------------------------------------------------------- *)
-
-(* pur : int list list -> int
-    - si `clauses' contient au moins un littéral pur, retourne
-      ce littéral ;
-    - sinon, lève une exception `Failure "pas de littéral pur"' *)
-
-
-(* custom exception to be used to raise (Failure "pas de littéral pur") *)
-exception Failure of string;;
-
-
-(* pur : int list list -> int
-    - si `clauses' contient au moins littéral, retourne ce littéral
-    - sinon, lève une exception `Failure "pas de littéral pur"
-*)
-let pur clauses = let l = List.flatten clauses in 
-  let sch = searchPur l 0 (List.length l) in 
-  if sch = 0 then raise (Failure "pas de littéral pur") else sch
-
 
 (* searchPur : int list -> int -> int -> int
     - si 'flat' ne contient pas l'inverse du littéral d'index n, s'appelle recursivement en incrémentant l'index de 1
@@ -124,6 +105,13 @@ let rec searchPur flat n length = match List.find_opt ((fun item -> item = - (Li
   | None -> List.nth flat n
   | l -> if (n + 1) >= length then raise (Failure "pas de littéral pur") else searchPur flat (n + 1) length
 
+(* pur : int list list -> int
+    - si `clauses' contient au moins littéral, retourne ce littéral
+    - sinon, lève une exception `Failure "pas de littéral pur"
+*)
+let pur clauses = let l = List.flatten clauses in 
+  let sch = searchPur l 0 (List.length l) in 
+  if sch = 0 then raise (Failure "pas de littéral pur") else sch
 
 (* unitaire : int list list -> int
     - si `clauses' contient au moins une clause unitaire, retourne
@@ -143,12 +131,12 @@ let rec solveur_dpll_rec clauses interpretation =
   (* Règle unit *)
   try
     let littUnit = unitaire clauses in
-    solveur_dpll_rec (simplifie littUnit clauses) interpretation
+    solveur_dpll_rec (simplifie littUnit clauses) (littUnit::interpretation)
   with Not_found ->
   (* Règle pure *)
   try
     let littPur = pur clauses in
-    solveur_dpll_rec (simplifie littPur clauses) interpretation
+    solveur_dpll_rec (simplifie littPur clauses) (littPur::interpretation)
   with Failure _ ->
   (* Branchement *)
   let l = hd (hd clauses) in (* TODO: Comment optimiser le choix de p ? *)
@@ -159,9 +147,12 @@ let rec solveur_dpll_rec clauses interpretation =
 
 (* tests *)
 (* ----------------------------------------------------------- *)
-(* let () = print_modele (solveur_dpll_rec systeme []) *)
-(* let () = print_modele (solveur_dpll_rec coloriage []) *)
-
-(* let () =
+let () = print_modele (solveur_dpll_rec systeme [])
+let () = print_modele (solveur_dpll_rec exemple_3_12 [])
+let () = print_modele (solveur_dpll_rec exemple_7_2 [])
+let () = print_modele (solveur_dpll_rec exemple_7_4 [])
+let () = print_modele (solveur_dpll_rec exemple_7_8 [])
+let () = print_modele (solveur_dpll_rec coloriage [])
+let () =
   let clauses = Dimacs.parse Sys.argv.(1) in
-  print_modele (solveur_dpll_rec clauses []) *)
+  print_modele (solveur_dpll_rec clauses [])

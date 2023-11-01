@@ -93,7 +93,7 @@ Rendre son mini-projet
  - sous la forme d'une archive XX-nom1-nom2.zip où `XX' est le numéro
    de binôme déclaré à la page
      https://moodle.u-paris.fr/mod/choicegroup/view.php?id=82687
-   et `nom1' et `nom2' sont les noms de famille des deux membres du
+   et `nom1` et `nom2` sont les noms de famille des deux membres du
    binôme, contenant l'arborescence suivante :
      XX-nom1-nom2/dpll.ml
      XX-nom1-nom2/dimacs.ml
