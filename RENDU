@@ -30,7 +30,19 @@ Questions sur votre code
    - Si non, expliquez en quelques phrases en français comment
      fonctionne votre implémentation de `simplifie`.
 
-**à remplir**
+Oui, nous avons utilisé la fonction 'filter_map' dans notre implémentation
+de 'simplifie'.
+Notre fonction 'simplifie' déclare une fonction imbriquée 'simplifieClause'
+(int list -> int list option) qui opère sur une seule clause. En notant cl
+la clause qui lui est passée  en argument et l le littéral par lequel on
+cherche à simplifier l'ensemble de clauses, 'simplifieClause' fonctionne
+ainsi:
+   . si cl contient l, elle renvoie None;
+   . si cl contient -l, elle renvoie Some(cl privée de -l);
+   . sinon, elle renvoie Some(cl).
+La fonction 'simplifie' correspond ensuite dans notre implémentation au
+résultat de l'application de 'simplifieClause' sur l'ensemble des clauses
+par filter_map.
 
 ---
 

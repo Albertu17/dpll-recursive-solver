@@ -51,14 +51,24 @@ let coloriage = [
    applique la simplification de l'ensemble des clauses en mettant
    le littéral l à vrai *)
 let simplifie l clauses =
-  let aux clause = 
-    let rec auxDeAux clause acc = match clause with
-      | [] -> Some(acc)
-      | h::t -> if h=l then None
-        else if h=(-l) then auxDeAux t acc
-        else auxDeAux t (h::acc)
-    in auxDeAux clause []
-  in filter_map aux clauses
+  (* simplifieClause : int list -> int list option
+     simplifie une seule clause. Est adaptée pour être passée en
+     argument à filter_map. *)
+  let simplifieClause clause = 
+    let rec aux clause acc = match clause with
+      | [] -> if acc=[] then None else Some(acc) (* L'accumulateur
+        peut être resté vide si la clause était vide ou si elle
+        ne contenait que des littéraux égaux à -l *)
+      | h::t ->
+        if h=l then None (* Si un des éléments de la clause est l,
+          on renvoie None. La clause sera supprimée dans le
+          résultat de filter_map. *)
+        else if h=(-l) then aux t acc (* Si un des éléménts est -l,
+          on ne le reporte pas dans la simplification. *)
+        else aux t (h::acc) (* Sinon, on reporte l'élément dans la
+           simplification. *)
+    in aux clause []
+  in filter_map simplifieClause clauses
 
 (* solveur_split : int list list -> int list -> int list option
    exemple d'utilisation de `simplifie' *)
@@ -100,23 +110,25 @@ let pur clauses =
       le littéral de cette clause unitaire ;
     - sinon, lève une exception `Not_found' *)
 let rec unitaire clauses = match clauses with
-  | [] -> raise Exception "Not_found" (* TODO: Trouver bon format erreur *)
+  | [] -> raise Not_found
   | h::t -> match h with
-    | [a] -> a
-    | _ -> unitaire t
+    | [l] -> l (* Si une clause unitaire est trouvée, renvoie son littéral.*)
+    | _ -> unitaire t (* Sinon, passe à l'examen de la clause suivante.*)
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 let rec solveur_dpll_rec clauses interpretation =
+  (* l'ensemble vide de clauses est satisfiable *)
   if clauses = [] then Some interpretation else
+  (* la clause vide n'est jamais satisfiable *)
   if mem [] clauses then None else
   try 
     let unitLitt = unitaire clauses in
     solveur_dpll_rec (simplifie unitLitt clauses) interpretation
-  with "Not_found" ->
+  with Not_found ->
   try 
     let pureLitt = pur clauses in
     solveur_dpll_rec (simplifie pureLitt clauses) interpretation
-  with Failure "pas de littéral pur" -> (* TODO: Trouver bon format erreur *)
+  with Failure "pas de littéral pur" ->
   let p = hd (hd clauses) in (* TODO: Comment optimiser le choix de p ? *)
   solveur_dpll_rec (simplifie p clauses) interpretation ||
   solveur_dpll_rec (simplifie (-p) clauses) interpretation
