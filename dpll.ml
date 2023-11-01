@@ -56,9 +56,7 @@ let simplifie l clauses =
      argument à filter_map. *)
   let simplifieClause clause = 
     let rec aux clause acc = match clause with
-      | [] -> if acc=[] then None else Some(acc) (* L'accumulateur
-        peut être resté vide si la clause était vide ou si elle
-        ne contenait que des littéraux égaux à -l *)
+      | [] -> Some(acc)
       | h::t ->
         if h=l then None (* Si un des éléments de la clause est l,
           on renvoie None. La clause sera supprimée dans le
@@ -117,21 +115,25 @@ let rec unitaire clauses = match clauses with
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 let rec solveur_dpll_rec clauses interpretation =
-  (* l'ensemble vide de clauses est satisfiable *)
+  (* Conditions de terminaison *)
   if clauses = [] then Some interpretation else
-  (* la clause vide n'est jamais satisfiable *)
   if mem [] clauses then None else
-  try 
-    let unitLitt = unitaire clauses in
-    solveur_dpll_rec (simplifie unitLitt clauses) interpretation
+  (* Règle unit *)
+  try
+    let littUnit = unitaire clauses in
+    solveur_dpll_rec (simplifie littUnit clauses) interpretation
   with Not_found ->
-  try 
-    let pureLitt = pur clauses in
-    solveur_dpll_rec (simplifie pureLitt clauses) interpretation
-  with Failure "pas de littéral pur" ->
-  let p = hd (hd clauses) in (* TODO: Comment optimiser le choix de p ? *)
-  solveur_dpll_rec (simplifie p clauses) interpretation ||
-  solveur_dpll_rec (simplifie (-p) clauses) interpretation
+  (* Règle pure *)
+  try
+    let littPur = pur clauses in
+    solveur_dpll_rec (simplifie littPur clauses) interpretation
+  with Failure _ ->
+  (* Branchement *)
+  let l = hd (hd clauses) in (* TODO: Comment optimiser le choix de p ? *)
+  let branche = solveur_dpll_rec (simplifie l clauses) (l::interpretation) in
+  match branche with
+  | None -> solveur_dpll_rec (simplifie (-l) clauses) ((-l)::interpretation)
+  | _    -> branche
 
 (* tests *)
 (* ----------------------------------------------------------- *)

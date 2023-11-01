@@ -34,9 +34,9 @@ Oui, nous avons utilisé la fonction 'filter_map' dans notre implémentation
 de 'simplifie'.
 Notre fonction 'simplifie' déclare une fonction imbriquée 'simplifieClause'
 (int list -> int list option) qui opère sur une seule clause. En notant cl
-la clause qui lui est passée  en argument et l le littéral par lequel on
+la clause qui lui est passée en argument et l le littéral par lequel on
 cherche à simplifier l'ensemble de clauses, 'simplifieClause' fonctionne
-ainsi:
+de la manière suivante:
    . si cl contient l, elle renvoie None;
    . si cl contient -l, elle renvoie Some(cl privée de -l);
    . sinon, elle renvoie Some(cl).
