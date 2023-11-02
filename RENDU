@@ -107,8 +107,8 @@ satisfiabilité:
    . solveur_dpll_rec donne comme exemple les valeurs -2, -3 et une
    valeur indifférente pour 1.
 Cette différence s'explique par le fait que solveur_split commence
-par split avec 1, tandis que solveur_dpll_rec commence par appliquer
-la règle unit, ce qui entraîne une simplification par -2.
+par appliquer la règle split avec 1, tandis que solveur_dpll_rec commence
+par appliquer la règle unit, ce qui entraîne une simplification par -2.
 De manière générale, la principale différence entre les deux solveurs
 est l'application supplémentaire des règles unit et pure avant celle
 de la règle split dans le solveur dpll.
