@@ -93,6 +93,12 @@ let () = print_modele (solveur_split coloriage [])  *)
 (* solveur dpll récursif *)
 (* ----------------------------------------------------------- *)
 
+(* count_abs_occ : int list -> int -> int * int 
+    prend en argument une liste l et un entier x,
+    compte le nombre d'occurences c de x dans l
+    et le nombre d'occurences c' de -x dans l,
+    et retourne le couple (c,c').
+  *)
 let count_abs_occ l x = 
   let rec aux l (c,c') = match l with
     | [] -> (c,c')
@@ -101,20 +107,37 @@ let count_abs_occ l x =
         else aux t (c,c') 
   in aux l (0,0)
 
-(* pur : int list list -> int
-    - si `clauses' contient au moins littéral, retourne ce littéral
-    - sinon, lève une exception `Failure "pas de littéral pur"
+(* pur : int list list -> (int, int) Result.t
+    - si `clauses' contient au moins un littéral pur l, retourne
+    ce littéral sous la forme Ok(l).
+    - sinon, retourne le littéral x ayant le plus d'occurences
+    parmi les clauses (en comptant sa forme opposée) sous la
+    forme Error(x).
 *) 
 let pur clauses = 
+  (* paramètres de la fonction auxiliaire:
+    l: liste (applatie) de littéraux.
+    (x, occ_x): élément le plus présent parmi la liste,
+      son nombre d'occurences. *)
   let rec aux l (x,occ_x) = match l with
-    | [] -> Result.Error (x)
+    | [] -> Error(x) (* Si on est arrivé jusqu'à la fin
+      de la liste, alors elle ne comprenait pas d'élément
+      pur: on renvoie celui qui est le plus présent. *)
     | h::t -> let (c,c') = count_abs_occ l h in
-        if c'=0 then Ok(h) 
-        else let occ_h = c+c' in 
-          aux (List.filter (fun y -> y!=h && y!=(-h)) t)
+        if c'=0 then Ok(h) (* Si l'opposé du littéral h
+          n'est pas présent parmi les clauses, alors h est
+          pur, on le renvoie.*)
+        else let occ_h = c+c' in (* Sinon, on poursuit la recherche
+           dans la liste privée des occurences de h, avec comme
+           élément le plus présent pour l'instant h ou x, selon le
+           résultat de la comparaison entre occ_h et occ_x. *)
+          aux (filter (fun y -> y!=h && y!=(-h)) t)
           (if occ_h > occ_x then (h,occ_h) else (x,occ_x))
-  in let flat = List.flatten clauses
-  in aux flat ((List.hd flat), 1)
+  in let flat = flatten clauses
+  (* On passe à la fonction auxiliaire les clauses réunient dans
+    une seule liste applatie, ainsi que l'élément a priori le plus
+    présent dans cette liste: le premier. *)
+  in aux flat ((hd flat), 1)
 
 (* unitaire : int list list -> int
     - si `clauses' contient au moins une clause unitaire, retourne
@@ -123,8 +146,10 @@ let pur clauses =
 let rec unitaire clauses = match clauses with
   | [] -> raise Not_found
   | h::t -> (match h with
-    | [l] -> l (* Si une clause unitaire est trouvée, renvoie son littéral.*)
-    | _ -> unitaire t) (* Sinon, passe à l'examen de la clause suivante.*)
+    | [l] -> l (* Si une clause unitaire est trouvée, on renvoie
+       son littéral.*)
+    | _ -> unitaire t) (* Sinon, on passe à l'examen de la clause
+       suivante.*)
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 let rec solveur_dpll_rec clauses interpretation =
@@ -139,9 +164,8 @@ let rec solveur_dpll_rec clauses interpretation =
   (* Règle pure *)
   match pur clauses with
     | Ok(littPur) -> solveur_dpll_rec (simplifie littPur clauses) (littPur::interpretation)
-    | Error(l) ->
-  (* Branchement *)
-  (* let l = hd (hd clauses) in *)
+    | Error(l) -> (* l est le littéral le plus présent parmi toutes les clauses. *)
+  (* Branchement (avec l) *)
       let branche = solveur_dpll_rec (simplifie l clauses) (l::interpretation) in
       match branche with
         | None -> solveur_dpll_rec (simplifie (-l) clauses) ((-l)::interpretation)
@@ -155,6 +179,6 @@ let () = print_modele (solveur_dpll_rec exemple_7_2 [])
 let () = print_modele (solveur_dpll_rec exemple_7_4 [])
 let () = print_modele (solveur_dpll_rec exemple_7_8 [])
 let () = print_modele (solveur_dpll_rec coloriage []) *)
-(* let () =
+let () =
   let clauses = Dimacs.parse Sys.argv.(1) in
-  print_modele (solveur_dpll_rec clauses []) *)
+  print_modele (solveur_dpll_rec clauses [])
