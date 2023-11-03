@@ -101,7 +101,8 @@ let () = print_modele (solveur_split coloriage [])
         la fonction lève une exception Failure "pas de littéral pur"
     - si 'flat' en contient pas l'inverse du littéral d'index n, alors ce littéral est pur, et est retourné.
  *)
-let rec searchPur flat n length = match List.find_opt ((fun item -> item = - (List.nth flat n))) flat with
+let rec searchPur flat n length =  
+  match List.find_opt ((fun item -> item = -(List.nth n))) flat with
   | None -> List.nth flat n
   | l -> if (n + 1) >= length then raise (Failure "pas de littéral pur") else searchPur flat (n + 1) length
 
@@ -110,7 +111,12 @@ let rec searchPur flat n length = match List.find_opt ((fun item -> item = - (Li
     - sinon, lève une exception `Failure "pas de littéral pur"
 *)
 let pur clauses = let l = List.flatten clauses in 
+  (* searchPur will only work with a flattened list 
+     searchPur is a recursive function, so we will need to put 0 as the starting index. We could avoid an 
+     unnecessary param with the use of an exteranl variable but ... ocmal*)
   let sch = searchPur l 0 (List.length l) in 
+  (* searchPur will give a 0 if a Failure '"pas de littéral pur" is raised will called inside a function. 
+     To catch this, check if searchPur = 0 and raise exception inside outer function. *)
   if sch = 0 then raise (Failure "pas de littéral pur") else sch
 
 (* unitaire : int list list -> int

@@ -73,25 +73,25 @@ l'exception Not_found est levée.
 
 Fonction auxillaire ajouté : searchPur
 
-La fonction searchPur prends en paramtères : 
-	- une liste préallablement aplatie, pour simplifier les parcours
-	- un int pour indiquer l'index du littéral que l'on cherche à déterminer si il est pur ou non. A chaque appel récursif, ce litéral est incrémenté de 1.
-	- un int pour indiquer la length de la liste passé en paramètre. Ceci évite de devoir re-calculer la longueur à chaque itération de cette fonction.
+Cette fonction récursive cherche si la liste (préalablement aplatie par pur) 
+prise en paramètre contient l'inverse du premier littéral.
 
-Cette fonction auxiliaire compare le littéral correspondant à l'index passé en 2eme paramètre à tous les autres nombres de la liste. 
+Si non : ce littéral est donc pur, et est renvoyé. 
+Si oui : ce littéral n'est donc pas pur. La fonction searchPur est donc 
+appellé avec un flitrage sur la liste d'origine moins toutes les instances 
+du littéral (il est pur, donc par besoin de le vérifier) ainsi que toutes 
+les instances de son inverse (ils sont par définition, aussi purs). 
 
-- Si son inverse n'existe pas dans la liste, alors le littéral est pur, et est renvoyé par la fonction, qui s'arrête donc ici (on évite donc de parcourir toute la liste si l'on à déjà un littéral pur sous la main).
+L'on évite donc le double, triple, quadruple ... comptage, ce qui compense 
+bien l'utilisation de List.filter en terme de complexité, surtout pour des 
+formules avec beaucoup de clauses / répétition du même littéral à travers 
+toutes les clauses. 
 
-- Si son inverse existe dans la liste, ce littéral n'est donc pas pur, et la fonction s'appelle elle même en incrémentant l'index appellé de 1. Si l'index + 1 est supérieur à la longueur de la lsite (donc si List.nth index l retournerait Failure nth), alors l'on considère qu'il n'y a aucun littéral pur dans la liste, et elle lève donc une exception (Failure "pas de littéral pur").
-
-
-La fonction pur, elle, prends en paramètre une liste de liste, la flatten à l'aide de List.flatten, et appelle searchPur sur le littéral d'index 0 dans cette liste. Elle lève (Failure "pas de littéral pur") si il n'existe pas de litéral pur dans cette liste. 
-
-Fonctions auxillaires utilisés : 
-
-List.find_opt
-List.length 
-
+Pour éviter de devoir recalculer la longueur de la liste à chaque récursion, 
+l'on part du principe que si List.hd échoue (et lève donc une (Failure hd), 
+alors la liste de contient pas de littéral (puisqu'ils ont tous été éliminés 
+par List.filter). La fonction pur lève donc une exception 
+(Failure "pas de littéral pur") 
 ---
 
 4. Donnez un exemple d'une formule pour laquelle les deux fonctions
@@ -117,7 +117,37 @@ de la règle split dans le solveur dpll.
 
 5. Avez-vous d'autres remarques sur votre rendu ? (question optionnelle)
 
-**à remplir**
+Nous n'avons pas cherché à optimiser la fonction solveur_split dans le code.
+ 
+Aujourd'hui, si le solveur ne peut appliquer pur ou unitary aux clauses, il 
+test avec solveur_split (l) OR solveur_split(-l), 
+avec l étant le premier littéral de la première sous-clause. Or ce littéral 
+n'a a priori pas plus de chance de résoudre rapidement l'arbre généré par 
+DPLL que n'importe quel autre littéral. 
+
+L'on pourrait imaginer qu'il serait intéressant de prioriser les littéraux 
+qui apparaissent le plus grand nombre de fois : l'on pourrait donc simplifier 
+plus vite l'ensemble des clauses, et donc arriver à une interprétation 
+(satisfiable ou non) plus rapidement. 
+L'on pourrait donc imaginer une fonction auxillaire qui recense les nombre 
+d'occurences de tous les littéraux (et de leurs inverses) à l'aide d'une map qui 
+associe (|litéral| : (nombre d'occurences de l) + (nombre d'occurences de -l)).
+Le littéral choisi pour splitter pourrait être celui avec le plus d'occurences. 
+
+La fonction solveur_split aurait aussi besoin d'être modifié pour permettre de 
+prendre cette liste en entrée, afin de ne pas devoir la recalculer à chaque fois. 
+Il faudrait aussi la mettre à jour à chaque appel réussi à pur/ unitaire / 
+solveur_dpll_rec.
+
+L'on pourrait aussi imaginer prioriser les litéraux contenus dans les clauses les 
+plus petites, afin de rapidement sur des clauses comme [l];[-l], permettant 
+d'invalider le split au plus vite, et éviter des opérations couteuses dans le 
+futur. 
+
+Pour ce faire, il faudrait mettre en place une liste des plus petites clauses, 
+à update à chaque appel réussi à pur/ unitaire / solveur_dpll_rec, et passage en 
+paramètre à solveur_dpll_rec.
+
 
 ---
 
