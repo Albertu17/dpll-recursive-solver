@@ -125,8 +125,34 @@ avec le littéral ayant le plus d'occurences parmi toutes les clauses
 
 5. Avez-vous d'autres remarques sur votre rendu ? (question optionnelle)
 
+Le choix du littéral qui est fourni à la fonction solveur_split a beaucoup 
+d'intêret : si il est mal choisi, une exploration parfois très profonde
+(et d'autant plus couteuse en temps et en mémoire) peut se produire pour 
+infirmer une certaine interpretation. 
+
+L'on pourrait imaginer qu'il serait intéressant de prioriser les littéraux 
+qui apparaissent le plus grand nombre de fois : l'on pourrait donc simplifier 
+plus vite l'ensemble des clauses, et donc arriver à une interprétation 
+(satisfiable ou non) plus rapidement. 
+L'on pourrait donc imaginer une fonction auxillaire qui recense les nombre 
+d'occurences de tous les littéraux (et de leurs inverses) à l'aide d'une map qui 
+associe (|litéral| : (nombre d'occurences de l) + (nombre d'occurences de -l)).
+Le littéral choisi pour splitter pourrait être celui avec le plus d'occurences. 
+
+L'on pourrait aussi imaginer prioriser les litéraux contenus dans les clauses les 
+plus petites, afin de rapidement sur des clauses comme [l];[-l], permettant 
+d'invalider le split au plus vite, et éviter des opérations couteuses dans le 
+futur. 
+
+Pour ce faire, il faudrait mettre en place une liste des plus petites clauses, 
+à update à chaque appel réussi à pur/ unitaire / solveur_dpll_rec, et passage en 
+paramètre à solveur_dpll_rec.
+
+Nous avons choisi de fournir une implémentation, peut-être une peu naîve, mais
+néanmoins fonctionelle pour modéliser la première solution.
+
 Notre impémentation de la fonction 'solveur_dpll_rec' comporte une
-application de la règle split un peu plus otpimisée qu'une application
+application de la règle split un peu plus optimisée qu'une application
 naïve: au lieu d'appliquer cette règle avec un littéral pris au hasard,
 nous l'appliquons avec le littéral ayant le plus d'occurences parmi
 toutes les clauses. Cela permet de réduire plus rapidement la taille des
@@ -136,7 +162,6 @@ La recherche du littéral ayant le plus d'occurences parmi les clauses ne
 requiert pratiquement pas d'opérations supplémentaires, puisqu'elle est 
 associée à la recherche d'un littéral pur, qui est de toutes façons
 lancée lors de chaque appel récursif (voir Q3).
-
 
 ---
 
