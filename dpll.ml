@@ -70,8 +70,6 @@ let simplifie l clauses =
 
 (* solveur_split : int list list -> int list -> int list option
    exemple d'utilisation de `simplifie' *)
-(* cette fonction ne doit pas être modifiée, sauf si vous changez 
-   le type de la fonction simplifie *)
 let rec solveur_split clauses interpretation =
   (* l'ensemble vide de clauses est satisfiable *)
   if clauses = [] then Some interpretation else
@@ -95,23 +93,17 @@ let () = print_modele (solveur_split coloriage [])
 (* solveur dpll récursif *)
 (* ----------------------------------------------------------- *)
 
-(* searchPur : int list -> int -> int -> int
-    - si 'flat' ne contient pas l'inverse du littéral d'index n, s'appelle recursivement en incrémentant l'index de 1
-    - si n + 1 est supérieuse à la longeur length de la liste aplatie, alors il n'existe pas de litéral pur, et 
-        la fonction lève une exception Failure "pas de littéral pur"
-    - si 'flat' en contient pas l'inverse du littéral d'index n, alors ce littéral est pur, et est retourné.
- *)
-let rec searchPur flat n length = match List.find_opt ((fun item -> item = - (List.nth flat n))) flat with
-  | None -> List.nth flat n
-  | l -> if (n + 1) >= length then raise (Failure "pas de littéral pur") else searchPur flat (n + 1) length
-
 (* pur : int list list -> int
     - si `clauses' contient au moins littéral, retourne ce littéral
     - sinon, lève une exception `Failure "pas de littéral pur"
 *)
-let pur clauses = let l = List.flatten clauses in 
-  let sch = searchPur l 0 (List.length l) in 
-  if sch = 0 then raise (Failure "pas de littéral pur") else sch
+let pur clauses = 
+  let rec aux flat = match flat with
+    | [] -> raise (Failure "pas de littéral pur")
+    | h::t -> (match List.find_opt (fun x -> x=(-h)) t with
+      | None -> h
+      | _ -> aux (List.filter (fun x -> x!=h && x!=(-h)) t))
+  in aux (List.flatten clauses)
 
 (* unitaire : int list list -> int
     - si `clauses' contient au moins une clause unitaire, retourne
@@ -119,9 +111,9 @@ let pur clauses = let l = List.flatten clauses in
     - sinon, lève une exception `Not_found' *)
 let rec unitaire clauses = match clauses with
   | [] -> raise Not_found
-  | h::t -> match h with
+  | h::t -> (match h with
     | [l] -> l (* Si une clause unitaire est trouvée, renvoie son littéral.*)
-    | _ -> unitaire t (* Sinon, passe à l'examen de la clause suivante.*)
+    | _ -> unitaire t) (* Sinon, passe à l'examen de la clause suivante.*)
 
 (* solveur_dpll_rec : int list list -> int list -> int list option *)
 let rec solveur_dpll_rec clauses interpretation =
@@ -153,6 +145,6 @@ let () = print_modele (solveur_dpll_rec exemple_7_2 [])
 let () = print_modele (solveur_dpll_rec exemple_7_4 [])
 let () = print_modele (solveur_dpll_rec exemple_7_8 [])
 let () = print_modele (solveur_dpll_rec coloriage [])
-let () =
+(* let () =
   let clauses = Dimacs.parse Sys.argv.(1) in
-  print_modele (solveur_dpll_rec clauses [])
+  print_modele (solveur_dpll_rec clauses []) *)
