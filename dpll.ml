@@ -122,7 +122,7 @@ let pur clauses =
   let rec aux l (x,occ_x) = match l with
     | [] -> Error(x) (* Si on est arrivé jusqu'à la fin
       de la liste, alors elle ne comprenait pas d'élément
-      pur: on renvoie celui qui est le plus présent. *)
+      pur: on renvoie celui ayant le plus d'occurences. *)
     | h::t -> let (c,c') = count_abs_occ l h in
         if c'=0 then Ok(h) (* Si l'opposé du littéral h
           n'est pas présent parmi les clauses, alors h est

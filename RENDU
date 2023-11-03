@@ -20,8 +20,7 @@ Questions sur votre code
    fichier README) ?
 
 Oui, nous avons testé ces commandes. 'make dpll' s'exécute sans erreurs ou
-warnings et le résultat './dpll sudoku-4x4.cnf' correspond précisément à
-celui attendu.
+warnings et le résultat './dpll sudoku-4x4.cnf' correspond à celui attendu.
 
 ---
 
@@ -71,26 +70,29 @@ l'exception Not_found est levée.
    quelques phrases en français comment ces fonctions auxiliaires sont
    utilisées dans votre implémentation de la fonction `pur`.
 
-Fonction auxillaire ajouté : searchPur
-
-La fonction searchPur prends en paramtères : 
-	- une liste préallablement aplatie, pour simplifier les parcours
-	- un int pour indiquer l'index du littéral que l'on cherche à déterminer si il est pur ou non. A chaque appel récursif, ce litéral est incrémenté de 1.
-	- un int pour indiquer la length de la liste passé en paramètre. Ceci évite de devoir re-calculer la longueur à chaque itération de cette fonction.
-
-Cette fonction auxiliaire compare le littéral correspondant à l'index passé en 2eme paramètre à tous les autres nombres de la liste. 
-
-- Si son inverse n'existe pas dans la liste, alors le littéral est pur, et est renvoyé par la fonction, qui s'arrête donc ici (on évite donc de parcourir toute la liste si l'on à déjà un littéral pur sous la main).
-
-- Si son inverse existe dans la liste, ce littéral n'est donc pas pur, et la fonction s'appelle elle même en incrémentant l'index appellé de 1. Si l'index + 1 est supérieur à la longueur de la lsite (donc si List.nth index l retournerait Failure nth), alors l'on considère qu'il n'y a aucun littéral pur dans la liste, et elle lève donc une exception (Failure "pas de littéral pur").
-
-
-La fonction pur, elle, prends en paramètre une liste de liste, la flatten à l'aide de List.flatten, et appelle searchPur sur le littéral d'index 0 dans cette liste. Elle lève (Failure "pas de littéral pur") si il n'existe pas de litéral pur dans cette liste. 
-
-Fonctions auxillaires utilisés : 
-
-List.find_opt
-List.length 
+Nous avons fait le choix de regrouper dans la fonction 'pur' à la fois la
+recherche d'un littéral pur et la recherche du littéral ayant le plus
+d'occurences parmi toutes les clauses. Cette dernière recherche permet 
+d'appliquer la règle split de manière plus optimisée (voir Q5) au cas où
+la recherche d'un littéral pur ne soit pas fructueuse.
+Ce regroupement est dû au fait que les opérations nécessaires pour effectuer
+ces recherches sont similaires dans notre implémentation: applatir la liste
+des clauses et, pour chacun de ses éléments, compter le nombre d'occurences
+de son opposé.
+Notre fonction 'pur' renvoie donc un littéral pur s'il en existe, et renvoie
+sinon le littéral ayant le plus d'occurences.
+Nous avons écrit comme fonction auxiliaire à la fonction 'pur' une
+fonction 'count_abs_occ' (int list -> int -> int * int) qui compte, pour un
+littéral x et une liste l de littéraux, les occurences absolues de x dans l:
+le nombre d'occurences c de x dans l et le nombre d'occurences c' de -x dans l.
+Cette fonction renvoie le couple (c,c').
+Au sein de la fonction 'pur', nous avons utilisés les fonctions 'flatten' et
+'filter' du module List. 'flatten' est utilisée pour applatir la liste de
+clauses, et 'filter' est utilisée pour retirer de la liste des littéraux ceux
+qui ont déjà été reconnus comme n'étant pas purs: cela évite le double, triple,
+quadruple... comptage, ce qui compense son utilisation en terme de complexité
+pour des formules comportant beaucoup de clauses/répétitions du même littéral
+à travers toutes les clauses. 
 
 ---
 
@@ -112,12 +114,29 @@ par appliquer la règle unit, ce qui entraîne une simplification par -2.
 De manière générale, la principale différence entre les deux solveurs
 est l'application supplémentaire des règles unit et pure avant celle
 de la règle split dans le solveur dpll.
+Dans notre implémentation, une différence supplémentaire entre les deux
+solveurs réside dans le choix du littéral avec lequel appliquer la règle
+split: 'solveur_split' applique cette règle avec la tête de la première
+clause de la liste de clauses, tandis que 'solveur_dpll_rec' l'applique
+avec le littéral ayant le plus d'occurences parmi toutes les clauses
+(voir question suivante).
 
 ---
 
 5. Avez-vous d'autres remarques sur votre rendu ? (question optionnelle)
 
-**à remplir**
+Notre impémentation de la fonction 'solveur_dpll_rec' comporte une
+application de la règle split un peu plus otpimisée qu'une application
+naïve: au lieu d'appliquer cette règle avec un littéral pris au hasard,
+nous l'appliquons avec le littéral ayant le plus d'occurences parmi
+toutes les clauses. Cela permet de réduire plus rapidement la taille des
+clauses, et donc augmente les chances de pouvoir appliquer les règles unit
+et pur.
+La recherche du littéral ayant le plus d'occurences parmi les clauses ne
+requiert pratiquement pas d'opérations supplémentaires, puisqu'elle est 
+associée à la recherche d'un littéral pur, qui est de toutes façons
+lancée lors de chaque appel récursif (voir Q3).
+
 
 ---
 
