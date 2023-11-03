@@ -83,27 +83,38 @@ let rec solveur_split clauses interpretation =
   | _    -> branche
 
 (* tests *)
-let () = print_modele (solveur_split systeme [])
+(* let () = print_modele (solveur_split systeme [])
 let () = print_modele (solveur_split exemple_3_12 [])
 let () = print_modele (solveur_split exemple_7_2 [])
 let () = print_modele (solveur_split exemple_7_4 [])
 let () = print_modele (solveur_split exemple_7_8 [])
-let () = print_modele (solveur_split coloriage []) 
+let () = print_modele (solveur_split coloriage [])  *)
 
 (* solveur dpll récursif *)
 (* ----------------------------------------------------------- *)
 
+let count_abs_occ l x = 
+  let rec aux l (c,c') = match l with
+    | [] -> (c,c')
+    | h::t -> if h=x then aux t (c+1,c')
+        else if h=(-x) then aux t (c,c'+1)
+        else aux t (c,c') 
+  in aux l (0,0)
+
 (* pur : int list list -> int
     - si `clauses' contient au moins littéral, retourne ce littéral
     - sinon, lève une exception `Failure "pas de littéral pur"
-*)
+*) 
 let pur clauses = 
-  let rec aux flat = match flat with
-    | [] -> raise (Failure "pas de littéral pur")
-    | h::t -> (match List.find_opt (fun x -> x=(-h)) t with
-      | None -> h
-      | _ -> aux (List.filter (fun x -> x!=h && x!=(-h)) t))
-  in aux (List.flatten clauses)
+  let rec aux l (x,occ_x) = match l with
+    | [] -> Result.Error (x)
+    | h::t -> let (c,c') = count_abs_occ l h in
+        if c'=0 then Ok(h) 
+        else let occ_h = c+c' in 
+          aux (List.filter (fun y -> y!=h && y!=(-h)) t)
+          (if occ_h > occ_x then (h,occ_h) else (x,occ_x))
+  in let flat = List.flatten clauses
+  in aux flat ((List.hd flat), 1)
 
 (* unitaire : int list list -> int
     - si `clauses' contient au moins une clause unitaire, retourne
@@ -126,25 +137,24 @@ let rec solveur_dpll_rec clauses interpretation =
     solveur_dpll_rec (simplifie littUnit clauses) (littUnit::interpretation)
   with Not_found ->
   (* Règle pure *)
-  try
-    let littPur = pur clauses in
-    solveur_dpll_rec (simplifie littPur clauses) (littPur::interpretation)
-  with Failure _ ->
+  match pur clauses with
+    | Ok(littPur) -> solveur_dpll_rec (simplifie littPur clauses) (littPur::interpretation)
+    | Error(l) ->
   (* Branchement *)
-  let l = hd (hd clauses) in (* TODO: Comment optimiser le choix de p ? *)
-  let branche = solveur_dpll_rec (simplifie l clauses) (l::interpretation) in
-  match branche with
-  | None -> solveur_dpll_rec (simplifie (-l) clauses) ((-l)::interpretation)
-  | _    -> branche
+  (* let l = hd (hd clauses) in *)
+      let branche = solveur_dpll_rec (simplifie l clauses) (l::interpretation) in
+      match branche with
+        | None -> solveur_dpll_rec (simplifie (-l) clauses) ((-l)::interpretation)
+        | _    -> branche
 
 (* tests *)
 (* ----------------------------------------------------------- *)
-let () = print_modele (solveur_dpll_rec systeme [])
+(* let () = print_modele (solveur_dpll_rec systeme [])
 let () = print_modele (solveur_dpll_rec exemple_3_12 [])
 let () = print_modele (solveur_dpll_rec exemple_7_2 [])
 let () = print_modele (solveur_dpll_rec exemple_7_4 [])
 let () = print_modele (solveur_dpll_rec exemple_7_8 [])
-let () = print_modele (solveur_dpll_rec coloriage [])
+let () = print_modele (solveur_dpll_rec coloriage []) *)
 (* let () =
   let clauses = Dimacs.parse Sys.argv.(1) in
   print_modele (solveur_dpll_rec clauses []) *)
